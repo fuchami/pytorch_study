@@ -22,7 +22,7 @@ train_dataset = dsets.MNIST(root='../data/', train=True, transform=transforms.To
 test_dataset = dsets.MNIST(root='../data/', train=False, transform=transforms.ToTensor())
 
 # Dataset Loading (Input Pipline)
-trian_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
+train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
 test_loader = torch.utils.data.DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False)
 
 #%% build CNN model
@@ -52,7 +52,7 @@ class CNN(nn.Module):
 
 #%% テスト
 model = CNN().to(device)
-images, labels = iter(trian_loader).next()
+images, labels = iter(train_loader).next()
 print(images.size())
 images = images.to(device)
 outputs = model(images)
@@ -65,10 +65,10 @@ optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 print(model)
 
 #%% define train valid flow
-def train(trian_loader):
+def train(train_loader):
     model.train()
     running_loss = 0
-    for batch_idx, (images, labels) in enumerate(trian_loader):
+    for batch_idx, (images, labels) in enumerate(train_loader):
         images = images.to(device) # テンソルデータをGPUに転送
         labels = labels.to(device)
 
@@ -114,7 +114,7 @@ loss_list = []
 val_loss_list = []
 val_acc_list = []
 for epoch in range(num_epochs):
-    loss = train(trian_loader)
+    loss = train(train_loader)
     val_loss, val_acc =  valid(test_loader)
 
     print('epoch %d, loss: %.4f val_loss: %.4f val_loss: %.4f' % (epoch, loss, val_loss, val_acc))
