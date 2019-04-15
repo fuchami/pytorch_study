@@ -2,3 +2,4 @@
 /pytorch_tutorials/data/
 .DS_Store
 *.gz
+*.json
