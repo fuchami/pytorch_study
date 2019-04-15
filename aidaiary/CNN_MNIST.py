@@ -8,7 +8,7 @@ import torchvision.datasets as dsets
 import torchvision.transforms as transforms
 
 # Hyperparameters
-num_epochs = 10
+num_epochs = 200
 batch_size = 100
 learning_rate = 0.001
 
@@ -117,7 +117,7 @@ for epoch in range(num_epochs):
     loss = train(train_loader)
     val_loss, val_acc =  valid(test_loader)
 
-    print('epoch %d, loss: %.4f val_loss: %.4f val_loss: %.4f' % (epoch, loss, val_loss, val_acc))
+    print('epoch %d, loss: %.4f val_loss: %.4f val_acc: %.4f' % (epoch, loss, val_loss, val_acc))
 
     # logging
     loss_list.append(loss)
@@ -140,6 +140,7 @@ plt.legend()
 plt.xlabel('epoch')
 plt.ylabel('loss')
 plt.grid()
+plt.show()
 
 plt.figure()
 plt.plot(range(num_epochs), val_acc_list, 'g-', label='val_acc')
