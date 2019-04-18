@@ -97,7 +97,7 @@ use_gpu = torch.cuda.is_available()
 def train_mode(model, criterion, optimizer, scheduler,num_epochs=25):
     since = time.time()
 
-    best_mode_wts = copy.deepcopy(model.statte_dict())
+    best_mode_wts = copy.deepcopy(model.state_dict())
     best_acc = 0.0
 
     for epoch in range(num_epochs):
@@ -111,7 +111,7 @@ def train_mode(model, criterion, optimizer, scheduler,num_epochs=25):
                 model.train(True) # training mode
             else:
                 # model.eval()じゃなくてこっちでも良い
-                model.trian(False)
+                model.train(False)
             
             running_loss = 0.0
             running_corrects = 0
@@ -121,7 +121,7 @@ def train_mode(model, criterion, optimizer, scheduler,num_epochs=25):
 
                 if use_gpu:
                     inputs = Variable(inputs.cuda())
-                    labels = Variable(inputs.cuda())
+                    labels = Variable(labels.cuda())
                 else:
                     inputs, labels = Variable(inputs), Variable(labels)
                 
@@ -132,17 +132,17 @@ def train_mode(model, criterion, optimizer, scheduler,num_epochs=25):
                 _, preds = torch.max(outputs.data, 1)
                 loss = criterion(outputs, labels)
 
-                if phase == 'trian':
+                if phase == 'train':
                     loss.backward()
                     optimizer.step()
                 
                 # statiscs
-                running_loss += loss.data[0] * inputs.size(0)
+                running_loss += loss.item() * inputs.size(0)
                 running_corrects += torch.sum(preds == labels.data)
             
             # サンプル数で割って平均を求める
-            epoch_loss = running_loss / datasets_sizes[phase]
-            epoch_acc = running_corrects / datasets_sizes[phase]
+            epoch_loss = running_loss / dataset_sizes[phase]
+            epoch_acc = running_corrects / dataset_sizes[phase]
 
             print('{} Loss: {:.4f} Acc: {:.4f}'.format(phase, epoch_loss, epoch_acc))
 
@@ -183,3 +183,13 @@ exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=7, gamma=0.1)
 
 model_ft = train_mode(model_ft, criterion, optimizer_ft, exp_lr_scheduler, num_epochs=35)
 # torch.save(model_ft.state_dict(), 'model_ft.pkl')
+
+
+"""
+学習済みの重みを固定(ConvNet as fixed feature extractor)
+レイヤの重みはすべて固定でFine-tuning
+"""
+
+# 訓練済みResNet18をロード
+
+
