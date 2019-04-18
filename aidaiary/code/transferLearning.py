@@ -190,6 +190,54 @@ model_ft = train_mode(model_ft, criterion, optimizer_ft, exp_lr_scheduler, num_e
 レイヤの重みはすべて固定でFine-tuning
 """
 
-# 訓練済みResNet18をロード
+#%% 訓練済みResNet18をロード
+model_conv = models.resnet18(pretrained=True)
+# すべてのパラメータを固定
+for param in model_conv.parameters():
+    param.requires_grad = False
 
+# 最後のfc層を置き換える
+num_features = model_conv.fc.in_features
+model_conv.fc = nn.Linear(num_features, 2)
+
+if use_gpu:
+    model_conv = model_conv.cuda()
+
+criterion = nn.CrossEntropyLoss()
+
+# Oprimizerの第1引数には更新対象のfc層のパラメータのみ指定
+optimizer_conv = optim.SGD(model_conv.fc.parameters(), lr=0.001, momentum=0.9)
+
+exp_lr_scheduler = lr_scheduler.StepLR(optimizer_conv, step_size=7, gamma=0.1)
+
+model_conv = train_mode(model_conv, criterion, optimizer_conv, exp_lr_scheduler, num_epochs=25)
+
+# GPUで学習したモデルのロード
+model_ft.load_state_dict(torch.load('model_ft.pkl', map_location=lambda storage, loc:storage ))
+
+def visualize_model(model, num_images=6):
+    images_so_far = 0
+    fig = plt.figure()
+
+    for i,data in enumerate(dataloaders['val']):
+        inputs, labels = data
+        if use_gpu:
+            inputs, labels = Variable(inputs.cuda()), Variable(labels.cuda())
+        else:
+            inputs, labels = Variable(inputs), Variable(labels)
+
+        outputs model(inputs)
+        _, preds = torch.max(outputs.data, 1)
+
+        for j in range(inputs.size()[0]):
+            images_so_far += 1
+            ax = plt.subplot(num_images // 2, 2, images_so_far)
+            ax.axis('off')
+            ax.set_title('predicted:{}'.format(class_names[preds[j]]))
+            imshow(inputs.cpu().data[j])
+
+            if images_so_far == num_images:
+                return
+    
+visualize_model(model_ft)
 
