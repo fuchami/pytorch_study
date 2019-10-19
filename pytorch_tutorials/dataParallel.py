@@ -69,6 +69,7 @@ if torch.cuda.device_count() > 1:
 model.to(device)
 
 #%% モデルの実行
+## 2GPUの場合、モデルは2つになり、2つ出力される
 for data in rand_loader:
     input = data.to(device)
     output = model(input)
